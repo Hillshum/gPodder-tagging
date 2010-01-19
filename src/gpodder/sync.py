@@ -61,12 +61,17 @@ except:
     log( '(gpodder.sync) Could not find eyeD3')
 
 try:
+	import tagpy
+except:
+	log( '(gpodder.sync) Could not find tagpy')
+
+try:
     import Image
 except:
     log('(gpodder.sync) Could not find Python Imaging Library (PIL)')
 
 # Register our dependencies for the synchronization module
-services.dependency_manager.depend_on(_('iPod synchronization'), _('Support synchronization of podcasts to Apple iPod devices via libgpod.'), ['gpod', 'mad', 'eyeD3'], [])
+services.dependency_manager.depend_on(_('iPod synchronization'), _('Support synchronization of podcasts to Apple iPod devices via libgpod.'), ['gpod', 'mad', 'eyeD3' , 'tagpy'], [])
 services.dependency_manager.depend_on(_('MTP device synchronization'), _('Support synchronization of podcasts to devices using the Media Transfer Protocol via pymtp.'), ['pymtp'], [])
 services.dependency_manager.depend_on(_('iPod OGG converter'), _('Convert OGG podcasts to MP3 files on synchronization to iPods using oggdec and LAME.'), [], ['oggdec', 'lame'])
 services.dependency_manager.depend_on(_('iPod video podcasts'), _('Detect video lengths via MPlayer, to synchronize video podcasts to iPods.'), [], ['mplayer'])
@@ -119,6 +124,12 @@ def get_track_length(filename):
         return int(eyed3_info.getPlayTime()*1000)
     except:
         pass
+	
+	try:
+		tagpy_info = tagpy.FileRef(filename)
+		return tagpy_info.length
+	except:
+		pass
 
     return int(60*60*1000*3) # Default is three hours (to be on the safe side)
 
