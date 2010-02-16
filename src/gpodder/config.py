@@ -226,6 +226,18 @@ gPodderSettings = {
     'youtube_preferred_fmt_id': (int, 18,
       ('The preferred video format that should be downloaded from YouTube.')),
 
+	# File tag updating settings
+	'update_tags': (bool, False,
+	  ("Should file tags be updated after download?")),
+	'tag_artist':  (str, '%(artist)s',
+	  ("The value for the artist tag. You may use '%(keyword)s' with any of the values 'artist', 'channel.title', or episode.title'")), 
+	'tag_album': (str, '%(channel.title)s',
+	  ("The value used for the album tag. You may use '%(keyword)s' with any of the values 'artist', 'channel.title', or 'episode.title'")),
+	'tag_genre': (str, 'Podcast',
+	  ("The value for the genre tag. You may use '%(keyword)s' with any of the values 'artist', 'channel.title', or episode.title'")),
+	'tag_title': (str, '%(episode.title)s',
+	  ("The value for the title tag. You may use '%(keyword)s' with any of the values 'artist', 'channel.title', or episode.title'")),
+
     # gpodder.net general settings
     'mygpo_username': (str, '',
       ("The user's gPodder web services username.")),
