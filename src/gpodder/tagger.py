@@ -4,8 +4,9 @@
 #insert fancy header stuff here
 
 
-import gpodder
 from gpodder import config
+
+
 import tagpy
 
 class Tagger(object):
@@ -15,19 +16,25 @@ class Tagger(object):
 	"""
 
 	def __init___(self,config):
-		self._config = config	
-		
+		self.config = config	
 
 	def update_tag(self, episode):
 		filename = episode.local_filename(create=False)
 		if filename is None:
-			raise Exception('cannot update tag of non-existing file')
+			raise Exception('Cannot update tag of non-existing file')
 
-		tag = tagpy.FileRef().tag()
-		tag.title = title
-		tag.genre = genre
-		tag.album = album
-		tag.artist = artist
+		self.arist = self.config.tag_artist
+		self.album = self.config.tag_album
+		self.genre = self.config.tag_genre
+		self.title = self.config.tag_title
+		tagvalues = {'channel.title':,'episode.title':,'artist':}
+		tagvalues['channel.title'] = epsisode.channel.title
+		tagvalues['episode.title'] = episode.title
+		#tagvalues['artist'] =  #Figure this out too
 
-	# Figure out how to get metadata from the episode objects, also figure out
-	# a config schema
+
+		tag = tagpy.FileRef(filename).tag()
+		tag.title = title % tagvalues
+		tag.genre = genre % tagvalues
+		tag.album = album % tagvalues
+		#tag.artist = artist % tagvalues # Don't know what to use for this yet
