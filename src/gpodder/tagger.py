@@ -27,7 +27,7 @@ class Tagger(object):
 		self.album = self.config.tag_album
 		self.genre = self.config.tag_genre
 		self.title = self.config.tag_title
-		tagvalues = {'channel.title':,'episode.title':,'artist':}
+		tagvalues = {'channel.title': None,'episode.title':None,'artist':None}
 		tagvalues['channel.title'] = epsisode.channel.title
 		tagvalues['episode.title'] = episode.title
 		#tagvalues['artist'] =  #Figure this out too
