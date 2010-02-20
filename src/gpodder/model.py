@@ -28,6 +28,8 @@ from gpodder import util
 from gpodder import feedcore
 from gpodder import youtube
 from gpodder import corestats
+from gpodder import config
+from gpodder import tagger
 
 from gpodder.liblogger import log
 
@@ -536,7 +538,7 @@ class PodcastChannel(PodcastModelObject):
         if not item.was_downloaded():
             item.mark_downloaded(save=True)
             self.update_m3u_playlist()
-            tagger.tag(item)
+            tagger.Tagger(config.Config()).tag(item)
 
     def get_all_episodes(self):
         return self.db.load_episodes(self, factory=self.episode_factory)
