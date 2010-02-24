@@ -5,6 +5,7 @@
 
 
 from gpodder import config
+from gpodder.liblogger import log
 
 
 import tagpy
@@ -21,7 +22,13 @@ class Tagger(object):
 	def update_tag(self, episode):
 		filename = episode.local_filename(create=False)
 		if filename is None:
-			raise Exception('Cannot update tag of non-existing file')
+			log('Cannot update tag of non-existing file')
+			return False
+		try: 
+			tag = tagpy.FileRef(filename).tag()
+		except ValueError:
+			log('Unable to read tag')
+			return False
 
 		self.artist = self.config.tag_artist
 		self.album = self.config.tag_album
@@ -33,8 +40,8 @@ class Tagger(object):
 		#tagvalues['artist'] =  #Figure this out too
 
 
-		tag = tagpy.FileRef(filename).tag()
 		tag.title = self.title % tagvalues
 		tag.genre = self.genre % tagvalues
 		tag.album = self.album % tagvalues
 		#tag.artist = self.artist % tagvalues # Don't know what to use for this yet
+		return True
