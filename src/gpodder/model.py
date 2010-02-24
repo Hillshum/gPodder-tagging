@@ -514,10 +514,10 @@ class PodcastChannel(PodcastModelObject):
         if not item.was_downloaded():
             item.mark_downloaded(save=True)
             self.update_m3u_playlist()
-			if gpodder.config.Config().update_tags:
-			# object.__new__() complains about only taking one argument if the
-			# config object is passed to the tagger's constructor.
-			# So, get that going separately 
+        if gpodder.config.Config().update_tags:
+        # object.__new__() complains about only taking one argument if the
+        # config object is passed to the tagger's constructor.
+        # So, get that going separately 
             t = tagger.Tagger()
             t.config = gpodder.config.Config()
             t.update_tag(item)
