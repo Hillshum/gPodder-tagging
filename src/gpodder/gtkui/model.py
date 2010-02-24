@@ -34,8 +34,13 @@ from gpodder.gtkui import draw
 
 import os
 import gtk
-import gio
 import xml.sax.saxutils
+
+try:
+    import gio
+    have_gio = True
+except ImportError:
+    have_gio = False
 
 class EpisodeListModel(gtk.ListStore):
     C_URL, C_TITLE, C_FILESIZE_TEXT, C_EPISODE, C_STATUS_ICON, \
@@ -248,14 +253,15 @@ class EpisodeListModel(gtk.ListStore):
                     status_icon = self.ICON_GENERIC_FILE
 
                 # Try to find a themed icon for this file
-                if filename is not None:
+                if filename is not None and have_gio:
                     file = gio.File(filename)
-                    file_info = file.query_info('*')
-                    icon = file_info.get_icon()
-                    for icon_name in icon.get_names():
-                        if icon_theme.has_icon(icon_name):
-                            status_icon = icon_name
-                            break
+                    if file.query_exists():
+                        file_info = file.query_info('*')
+                        icon = file_info.get_icon()
+                        for icon_name in icon.get_names():
+                            if icon_theme.has_icon(icon_name):
+                                status_icon = icon_name
+                                break
 
                 if show_missing:
                     tooltip.append(_('missing file'))
@@ -632,11 +638,20 @@ class PodcastListModel(gtk.ListStore):
                     return row.path
         return None
 
+    def update_first_row(self):
+        # Update the first row in the model (for "all episodes" updates)
+        self.update_by_iter(self.get_iter_first())
+
     def update_by_urls(self, urls):
         # Given a list of URLs, update each matching row
         for row in self:
             if row[self.C_URL] in urls:
                 self.update_by_iter(row.iter)
+
+    def iter_is_first_row(self, iter):
+        iter = self._filter.convert_iter_to_child_iter(iter)
+        path = self.get_path(iter)
+        return (path == (0,))
 
     def update_by_filter_iter(self, iter):
         self.update_by_iter(self._filter.convert_iter_to_child_iter(iter))
