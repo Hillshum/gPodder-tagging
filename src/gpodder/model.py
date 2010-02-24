@@ -514,7 +514,7 @@ class PodcastChannel(PodcastModelObject):
         if not item.was_downloaded():
             item.mark_downloaded(save=True)
             self.update_m3u_playlist()
-            tagger.Tagger(config.Config()).tag(item)
+            tagger.Tagger(config.Config()).update_tag(item)
 
     def get_all_episodes(self):
         return self.db.load_episodes(self, factory=self.episode_factory)
