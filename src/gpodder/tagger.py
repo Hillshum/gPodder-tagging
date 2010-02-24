@@ -23,7 +23,7 @@ class Tagger(object):
 		if filename is None:
 			raise Exception('Cannot update tag of non-existing file')
 
-		self.arist = self.config.tag_artist
+		self.artist = self.config.tag_artist
 		self.album = self.config.tag_album
 		self.genre = self.config.tag_genre
 		self.title = self.config.tag_title
@@ -34,7 +34,7 @@ class Tagger(object):
 
 
 		tag = tagpy.FileRef(filename).tag()
-		tag.title = title % tagvalues
-		tag.genre = genre % tagvalues
-		tag.album = album % tagvalues
-		#tag.artist = artist % tagvalues # Don't know what to use for this yet
+		tag.title = self.title % tagvalues
+		tag.genre = self.genre % tagvalues
+		tag.album = self.album % tagvalues
+		#tag.artist = self.artist % tagvalues # Don't know what to use for this yet
