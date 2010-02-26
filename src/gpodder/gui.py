@@ -131,10 +131,11 @@ elif gpodder.ui.fremantle:
     from gpodder.gtkui.frmntl.podcastdirectory import gPodderPodcastDirectory
     from gpodder.gtkui.frmntl.episodes import gPodderEpisodes
     from gpodder.gtkui.frmntl.downloads import gPodderDownloads
-    from gpodder.gtkui.interface.common import Orientation
     have_trayicon = False
 
     from gpodder.gtkui.frmntl.portrait import FremantleRotation
+
+from gpodder.gtkui.interface.common import Orientation
 
 from gpodder.gtkui.interface.welcome import gPodderWelcome
 from gpodder.gtkui.interface.progress import ProgressIndicator
@@ -213,9 +214,13 @@ class gPodder(BuilderWidget, dbus.service.Object):
             if self.config.rotation_mode == FremantleRotation.ALWAYS:
                 util.idle_add(self.on_window_orientation_changed, \
                         Orientation.PORTRAIT)
+                self._last_orientation = Orientation.PORTRAIT
+            else:
+                self._last_orientation = Orientation.LANDSCAPE
 
             self.bluetooth_available = False
         else:
+            self._last_orientation = Orientation.LANDSCAPE
             self.bluetooth_available = util.bluetooth_available()
             self.toolbar.set_property('visible', self.config.show_toolbar)
 
@@ -238,7 +243,8 @@ class gPodder(BuilderWidget, dbus.service.Object):
                     self.main_window, self.show_confirmation, \
                     self.update_episode_list_icons, \
                     self.update_podcast_list_model, self.toolPreferences, \
-                    gPodderEpisodeSelector)
+                    gPodderEpisodeSelector, \
+                    self.commit_changes_to_database)
         else:
             self.sync_ui = None
 
@@ -629,6 +635,10 @@ class gPodder(BuilderWidget, dbus.service.Object):
         self._for_each_task_set_status(selected_tasks, status)
 
     def on_window_orientation_changed(self, orientation):
+        self._last_orientation = orientation
+        if self.preferences_dialog is not None:
+            self.preferences_dialog.on_window_orientation_changed(orientation)
+
         treeview = self.treeChannels
         if orientation == Orientation.PORTRAIT:
             treeview.set_action_area_orientation(gtk.ORIENTATION_VERTICAL)
@@ -2929,8 +2939,9 @@ class gPodder(BuilderWidget, dbus.service.Object):
 
     def on_sync_to_ipod_activate(self, widget, episodes=None):
         self.sync_ui.on_synchronize_episodes(self.channels, episodes)
-        # The sync process might have updated the status of episodes,
-        # therefore persist the database here to avoid losing data
+
+    def commit_changes_to_database(self):
+        """This will be called after the sync process is finished"""
         self.db.commit()
 
     def on_cleanup_ipod_activate(self, widget, *args):
@@ -3019,7 +3030,12 @@ class gPodder(BuilderWidget, dbus.service.Object):
                 _config=self.config, \
                 callback_finished=self.properties_closed, \
                 user_apps_reader=self.user_apps_reader, \
-                mygpo_login=self.on_mygpo_settings_activate)
+                mygpo_login=self.on_mygpo_settings_activate, \
+                on_itemAbout_activate=self.on_itemAbout_activate, \
+                on_wiki_activate=self.on_wiki_activate)
+
+        # Initial message to relayout window (in case it's opened in portrait mode
+        self.preferences_dialog.on_window_orientation_changed(self._last_orientation)
 
     def on_itemDependencies_activate(self, widget):
         gPodderDependencyManager(self.gPodder)
