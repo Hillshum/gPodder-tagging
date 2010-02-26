@@ -39,12 +39,12 @@ class Tagger(object):
         filename = episode.local_filename(create=False)
         if filename is None:
             log('Cannot update tag of non-existing file')
-			return False
-		try: 
-			tag = tagpy.FileRef(filename).tag()
-		except ValueError:
-			log('Unable to read tag')
-			return False
+            return False
+        try: 
+            tag = tagpy.FileRef(filename).tag()
+        except ValueError:
+            log('Unable to read tag')
+            return False
 
         self.artist = self.config.tag_artist
         self.album = self.config.tag_album
