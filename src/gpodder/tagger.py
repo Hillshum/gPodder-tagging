@@ -41,7 +41,8 @@ class Tagger(object):
             log('Cannot update tag of non-existing file')
             return False
         try: 
-            tag = tagpy.FileRef(filename).tag()
+            fileref = tagpy.FileRef(filename.encode('utf-8'))
+            tag = fileref.tag()
         except ValueError:
             log('Unable to read tag')
             return False
@@ -60,4 +61,5 @@ class Tagger(object):
         tag.genre = self.genre % tagvalues
         tag.album = self.album % tagvalues
         #tag.artist = self.artist % tagvalues # Don't know what to use for this yet
+        fileref.save()
         return True
