@@ -176,7 +176,9 @@ class EpisodeListModel(gtk.ListStore):
 
         self._all_episodes_view = getattr(channel, 'ALL_EPISODES_PROXY', False)
 
-        episodes = list(channel.get_all_episodes())
+        episodes = channel.get_all_episodes()
+        if not isinstance(episodes, list):
+            episodes = list(episodes)
         count = len(episodes)
 
         for position, episode in enumerate(episodes):
@@ -319,6 +321,9 @@ class EpisodeListModel(gtk.ListStore):
                             tooltip.append(_('opened'))
                     if show_padlock:
                         tooltip.append(_('deletion prevented'))
+
+                if episode.total_time > 0:
+                    tooltip.append('%d%%' % (100.*float(episode.current_position)/float(episode.total_time)))
 
                 tooltip = ', '.join(tooltip)
 
@@ -467,12 +472,8 @@ class PodcastChannelProxy(object):
 
     def get_all_episodes(self):
         """Returns a generator that yields every episode"""
-        def all_episodes():
-            for channel in self.channels:
-                for episode in channel.get_all_episodes():
-                    episode._all_episodes_view = True
-                    yield episode
-        return model.PodcastEpisode.sort_by_pubdate(all_episodes(), reverse=True)
+        channel_lookup_map = dict((c.id, c) for c in self.channels)
+        return self._db.load_all_episodes(channel_lookup_map)
 
     def request_save_dir_size(self):
         if not self._save_dir_size_set:
@@ -516,7 +517,8 @@ class PodcastListModel(gtk.ListStore):
         # If searching is active, set visibility based on search text
         if self._search_term is not None:
             key = self._search_term.lower()
-            return any((key in model.get_value(iter, column).lower()) for column in self.SEARCH_COLUMNS)
+            columns = (model.get_value(iter, c) for c in self.SEARCH_COLUMNS)
+            return any((key in c.lower() for c in columns if c is not None))
 
         if model.get_value(iter, self.C_SEPARATOR):
             return True

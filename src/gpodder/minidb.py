@@ -28,7 +28,16 @@
 # For Python 2.5, we need to request the "with" statement
 from __future__ import with_statement
 
-import sqlite3.dbapi2 as sqlite
+import sys
+
+try:
+    import sqlite3.dbapi2 as sqlite
+except ImportError:
+    try:
+        from pysqlite2 import dbapi2 as sqlite
+    except ImportError:
+        raise Exception('Please install SQLite3 support.')
+
 
 import threading
 
@@ -88,7 +97,7 @@ class Store(object):
             table, slots = self._schema(o.__class__)
 
             # Only save values that have values set (non-None values)
-            slots = [s for s in slots if getattr(o, s) is not None]
+            slots = [s for s in slots if getattr(o, s, None) is not None]
 
             values = [str(getattr(o, slot)) for slot in slots]
             self.db.execute('INSERT INTO %s (%s) VALUES (%s)' % (table,
@@ -128,7 +137,7 @@ class Store(object):
                 for attr, value in zip(slots, row):
                     self._set(o, attr, value)
                 return o
-            return [apply(row) for row in cur.fetchall()]
+            return [apply(row) for row in cur]
 
     def get(self, class_, **kwargs):
         result = self.load(class_, **kwargs)

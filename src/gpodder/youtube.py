@@ -56,6 +56,9 @@ def get_real_download_url(url, preferred_fmt_id=18):
         # Try to find the best video format available for this video
         # (http://forum.videohelp.com/topic336882-1800.html#1912972)
         r3 = re.compile('.*"fmt_map"\:\s+"([^"]+)".*').search(page)
+        if not r3:
+            r3 = re.compile('&fmt_map=([^&]+).*').search(page)
+
         if r3:
             formats_available = urllib.unquote(r3.group(1)).split(',')
         else:
@@ -69,7 +72,10 @@ def get_real_download_url(url, preferred_fmt_id=18):
         elif gpodder.ui.fremantle:
             # This provides good quality video, seems to be always available
             # and is playable fluently in Media Player
-            fmt_id = 18
+            if preferred_fmt_id == 5:
+                fmt_id = 5
+            else:
+                fmt_id = 18
         else:
             # As a fallback, use fmt_id 18 (seems to be always available)
             fmt_id = 18
@@ -93,6 +99,9 @@ def get_real_download_url(url, preferred_fmt_id=18):
                     break
 
         r2 = re.compile('.*"t"\:\s+"([^"]+)".*').search(page)
+        if not r2:
+            r2 = re.compile('.*&t=([^&]+)').search(page)
+
         if r2:
             next = 'http://www.youtube.com/get_video?video_id=' + vid + '&t=' + r2.group(1) + '&fmt=%d' % fmt_id
             log('YouTube link resolved: %s => %s', url, next)
